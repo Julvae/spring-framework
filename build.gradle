@@ -1,9 +1,12 @@
 buildscript {
 	repositories {
-		maven { url "https://repo.spring.io/plugins-release" }
+		maven { url "http://maven.aliyun.com/nexus/content/groups/public" }
+		maven { url "http://repo.spring.io/plugins-snapshot" }
+		//maven { url "http://repo.springsource.org/plugins-release" }
+		//maven { url "https://mirrors.huaweicloud.com/repository/maven" }
 	}
 	dependencies {
-		classpath("org.springframework.build.gradle:propdeps-plugin:0.0.7")
+		classpath("org.springframework.build.gradle:propdeps-plugin:0.0.7-SNAPSHOT")
 		classpath("io.spring.gradle:docbook-reference-plugin:0.3.1")
 	}
 }
@@ -74,7 +77,10 @@ configure(allprojects) { project ->
 	}
 
 	repositories {
-		maven { url "https://repo.spring.io/libs-release" }
+		maven { url "http://maven.aliyun.com/nexus/content/groups/public" }
+		maven { url "http://repo.spring.io/plugins-snapshot" }
+		//maven { url "http://repo.springsource.org/plugins-release" }
+		//maven { url "https://mirrors.huaweicloud.com/repository/maven" }
 	}
 
 	dependencies {
@@ -156,8 +162,8 @@ configure(subprojects - project(":spring-build-src")) { subproject ->
 	}
 
 	artifacts {
-		archives sourcesJar
-		archives javadocJar
+		//archives sourcesJar
+		//archives javadocJar
 	}
 }
 
@@ -1043,9 +1049,9 @@ configure(rootProject) {
 	}
 
 	artifacts {
-		archives docsZip
-		archives schemaZip
-		archives distZip
+		//archives docsZip
+		//archives schemaZip
+		//archives distZip
 	}
 
 	task wrapper(type: Wrapper) {
@@ -1082,3 +1088,5 @@ def qualifyVersionIfNecessary(version) {
 	}
 	return version
 }
+
+apply from: "${gradleScriptDir}/gradle2maven.gradle"

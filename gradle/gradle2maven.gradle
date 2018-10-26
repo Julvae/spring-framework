@@ -1,0 +1,128 @@
+
+def publishMavenProjects() {
+    return subprojects.findAll {
+        it.name != 'spring-build-src' &&
+                it.name != 'spring-orm-hibernate4' &&
+                it.name != 'spring-webmvc-tiles3' &&
+                it.name != 'spring-test-mvc'
+
+    }
+}
+
+configure(publishMavenProjects()){subproject ->
+    apply plugin: "java"
+    apply plugin: "maven"
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                repository(url: "http://artifactory.intra.xiaojukeji.com:80/artifactory/libs-snapshot") {
+                    authentication(userName: "liaoyoujin", password: "AKCp5ZmHJrQP7ViDm6hEvvDPAtGN4cGP1k29mny9jGV9pis5cbxLaciNPKkxiDgNqXnK9CuYy")
+                }
+                pom.groupId == subproject.group
+                pom.artifactId == subproject.name
+                pom.version == subproject.version
+            }
+        }
+    }
+
+    task writeNewPom {
+        doLast {
+            pom {
+                project {
+                    inceptionYear '2008'
+                    licenses {
+                        license {
+                            name 'The Apache Software License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution 'repo'
+                        }
+                    }
+                }
+                withXml {
+                    asNode().dependencies.'*'.findAll() {
+                        it.scope.text() == 'optional' && project.configurations.compile.allDependencies.find { dep ->
+                            dep.name == it.artifactId.text()
+                        }
+                    }.each {
+                        println(it.groupId)
+                        it.scope*.value = 'compile'
+                    }
+                }
+            }.writeTo("${subproject.projectDir}/pom.xml")
+        }
+    }
+
+//    task copyLocalJar(type: Copy, dependsOn: jar){
+//        from("${subproject.buildDir}/libs/")
+//        include '**/spring-asm*.jar','**/spring-cglib*.jar'
+//        into file("src/main/resources/lib/")
+//        includeEmptyDirs = true
+//    }
+//    copyLocalJar.onlyIf {subproject.name == "spring-core"}
+
+    task doDependencies(type: Copy, dependsOn: [writeNewPom]) {
+        if(subproject.name == "spring-core"){
+            dependsOn cglibRepackJar
+        }
+        doLast {
+            def xmlRoot = new XmlParser().parse(file("${subproject.projectDir}/pom.xml"))
+            def depRoot = xmlRoot.dependencies
+            def depRootFirst = depRoot.first()
+            //println(depRootFirst)
+            depRootFirst.dependency.each{dep ->
+                depRootFirst.remove(dep)
+            }
+            Map<String,String> map = new HashMap<String, String>()
+            configurations.all.each { configuration ->
+                //println("**********${configuration}**${subproject.name}->artifact************")
+                configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+//					println("moudle:${artifact}")
+                    def elem = artifact.moduleVersion.id
+                    def key = "${elem.name}"
+                    if(!map.containsKey(key)){
+                        def dr = depRootFirst.appendNode("dependency")
+                        dr.appendNode("groupId","${elem.group}")
+                        dr.appendNode("artifactId","${elem.name}")
+                        dr.appendNode("version","${elem.version}")
+                        map.put(key, "1")
+                    }
+                }
+                configuration.files { it instanceof FileCollectionDependency }.collect { it }.each { file ->
+                    def key = "${file.name}"
+                    println(key)
+                    def arr = file.name.split("-")
+                    def sub = arr[0..arr.size()-2]
+                    println(sub.toString())
+                    String name = sub.join("-")
+                    def version = arr[arr.size()-1].replace(".jar","")
+                    if(!map.containsKey(key)){
+                        def dr = depRootFirst.appendNode("dependency")
+                        dr.appendNode("groupId","${subproject.group}")
+                        dr.appendNode("artifactId","${name}")
+                        dr.appendNode("version","${version}")
+                        dr.appendNode("scope","system")
+                        dr.appendNode("systemPath","${subproject.projectDir}/src/main/resources/lib/"+key)
+                        from("${subproject.buildDir}/libs/")
+                        include "${key}"
+                        into file("src/main/resources/lib/")
+                        includeEmptyDirs = true
+                        map.put(key, "1")
+                    }
+
+                }
+            }
+            def printer = new XmlNodePrinter(new PrintWriter(new FileWriter("${subproject.projectDir}/pom.xml")))
+            printer.preserveWhitespace = true
+            printer.print(xmlRoot)
+        }
+    }
+    install.dependsOn(doDependencies)
+
+    task cleanDependencies(type: Delete){
+        delete fileTree("${subproject.projectDir}") {
+            include 'pom.xml'
+        }
+    }
+    clean.dependsOn(cleanDependencies)
+}
