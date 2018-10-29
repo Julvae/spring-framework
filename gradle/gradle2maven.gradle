@@ -1,3 +1,6 @@
+//Spring转Maven项目插件，只要在build.gradle脚本最后加上：目前只针对3.2.x版本有效，其他版本没有测试
+//apply plugin: 'maven-publish'
+//apply from: "${gradleScriptDir}/gradle2maven.gradle"
 
 def publishMavenProjects() {
     return subprojects.findAll {
