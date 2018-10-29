@@ -1089,4 +1089,5 @@ def qualifyVersionIfNecessary(version) {
 	return version
 }
 
+apply plugin: 'maven-publish'
 apply from: "${gradleScriptDir}/gradle2maven.gradle"
