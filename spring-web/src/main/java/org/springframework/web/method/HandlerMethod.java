@@ -28,6 +28,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.web.util.SLogFactory;
 
 /**
  * Encapsulates information about a handler method consisting of a {@linkplain #getMethod() method}
@@ -45,7 +46,7 @@ import org.springframework.util.ClassUtils;
 public class HandlerMethod {
 
 	/** Logger that is available to subclasses */
-	protected final Log logger = LogFactory.getLog(HandlerMethod.class);
+	protected final Log logger = SLogFactory.getLog(HandlerMethod.class);
 
 	private final Object bean;
 

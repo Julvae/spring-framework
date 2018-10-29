@@ -546,7 +546,9 @@ project("spring-orm") {
 		optional("org.hibernate:hibernate-core:3.3.2.GA")
 		optional("org.hibernate:hibernate-annotations:3.4.0.GA")
 		optional("org.hibernate:hibernate-entitymanager:3.4.0.GA")
-		optional("org.apache.openjpa:openjpa:1.1.0")
+		optional("org.apache.openjpa:openjpa:1.1.0"){
+			exclude group: 'org.apache.geronimo.specs', module: 'geronimo-jms_1.1_spec'
+		}
 		optional("toplink.essentials:toplink-essentials:2.0-41b")
 		optional("javax.jdo:jdo-api:3.0")
 		optional("org.apache.ibatis:ibatis-sqlmap:2.3.4.726")
@@ -1089,5 +1091,5 @@ def qualifyVersionIfNecessary(version) {
 	return version
 }
 
-apply plugin: 'maven-publish'
+//apply plugin: 'maven-publish'
 apply from: "${gradleScriptDir}/gradle2maven.gradle"

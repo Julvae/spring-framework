@@ -17,19 +17,6 @@ configure(publishMavenProjects()){subproject ->
     apply plugin: "java"
     apply plugin: "maven"
 
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-                repository(url: "http://artifactory.intra.xiaojukeji.com:80/artifactory/libs-snapshot") {
-                    authentication(userName: "liaoyoujin", password: "AKCp5ZmHJrQP7ViDm6hEvvDPAtGN4cGP1k29mny9jGV9pis5cbxLaciNPKkxiDgNqXnK9CuYy")
-                }
-                pom.groupId == subproject.group
-                pom.artifactId == subproject.name
-                pom.version == subproject.version
-            }
-        }
-    }
-
     task writeNewPom {
         doLast {
             pom {
@@ -230,3 +217,39 @@ configure(rootProject){
     }
     install.dependsOn(writeNewPom)
 }
+
+
+
+subprojects{subproject ->
+    apply plugin: "java"
+    apply plugin: "maven"
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                repository(url: "http://artifactory.intra.xiaojukeji.com:80/artifactory/libs-snapshot") {
+                    authentication(userName: "liaoyoujin", password: "AKCp5ZmHJrQP7ViDm6hEvvDPAtGN4cGP1k29mny9jGV9pis5cbxLaciNPKkxiDgNqXnK9CuYy")
+                }
+                pom.groupId == subproject.group
+                pom.artifactId == subproject.name
+                pom.version == subproject.version
+            }
+        }
+    }
+}
+
+project('spring-orm-hibernate4') {
+    configurations.archives.artifacts.clear()
+}
+project('spring-test-mvc') {
+    configurations.archives.artifacts.clear()
+}
+//project('spring-test') {
+//    configurations.archives.artifacts.clear()
+//}
+project('spring-webmvc-tiles3') {
+    configurations.archives.artifacts.clear()
+}
+//project('spring-aspects') {
+//    configurations.archives.artifacts.clear()
+//}
